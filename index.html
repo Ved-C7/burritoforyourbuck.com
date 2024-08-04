@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Burrito For Your Buck</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="/favicon_io/site.webmanifest">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+        .overlay-container {
+            position: absolute;
+            background: rgba(255, 255, 255, 1);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            pointer-events: auto;
+        }
+        .header-container, .zipcode-container {
+            top: 10px;
+        }
+        .header-container {
+            left: 10px;
+            width: 250px;
+            /* display: flex;
+            flex-direction: column;
+            align-items: center; Center the items */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .zipcode-container {
+            left: 10px;
+            top: 190px;
+        }
+        .price-info-container {
+            top: 510px;
+            left: 10px;
+            width: 300px; /* Fixed width for price info container */
+            height: 150px;
+        }
+        .gradient-container {
+            top: 90%;
+            left: 10px;
+            width: 20%;
+        }
+        .header, .zipcode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #zipcode-input, button {
+            padding: 10px; /* Increased padding for input and button */
+            margin: 5px 0; /* Added margin for better spacing */
+        }
+        button {
+            cursor: pointer; /* Make the cursor indicate clickable button */
+            background-color: #4CAF50; /* A green background for the button */
+            color: white; /* White text color */
+            border: none; /* No border */
+            border-radius: 4px; /* Rounded corners for the button */
+        }
+        button:hover {
+            background-color: #45a049; /* Darker shade on hover */
+        }
+        #price-info {
+            text-align: center;
+        }
+        .gradient-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #0f0, #f00);
+            position: relative;
+            margin-top: 10px;
+        }
+        .gradient-label {
+            position: absolute;
+            top: -20px;
+            font-size: 12px;
+        }
+        .gradient-label.left {
+            left: 0;
+        }
+        .gradient-label.right {
+            right: 0;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 16px; /* Larger font size for dropdown */
+        }
+        select:focus {
+            border-color: #4CAF50; /* Green border on focus */
+            outline: none; /* Remove default outline */
+        }
+    </style>
+</head>
+<body>
+    <div id="map">
+        <div class="overlay-container header-container">
+            <div class="header">
+                <img src="bfubLOGOTextWhite.jpg" alt="Burrito For Your Buck" style="height: 100px;">
+                <select id="item-select">
+                    <option value="burrito">Burrito/Burrito Bowl</option>
+                    <!-- <option value="burrito-bowl">Burrito Bowl</option> -->
+                    <option value="quesadilla">Quesadilla</option>
+                </select>
+            </div>
+        </div>
+        <div class="overlay-container zipcode-container">
+            <div class="zipcode">
+                <label for="zipcode-input">Enter ZIP Code:</label>
+                <input type="text" id="zipcode-input" placeholder="ZIP Code">
+                <button onclick="zoomToZip()">Zoom</button>
+            </div>
+        </div>
+        <div class="overlay-container price-info-container">
+            <div id="price-info"></div>
+        </div>
+        <div class="overlay-container gradient-container">
+            <div class="gradient-bar">
+                <span class="gradient-label left">Cheapest</span>
+                <span class="gradient-label right">Most Expensive</span>
+            </div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="SmoothWheelZoom.js"></script>
+    <script>
+        var map = L.map('map', {
+            center: [37.8, -96],
+            zoom: 4,
+            zoomControl: false,
+            zoomAnimation: true,
+            fadeAnimation: true,
+            markerZoomAnimation: true,
+            scrollWheelZoom: false,
+            smoothWheelZoom: true,
+            smoothSensitivity: 6,
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors, © CartoDB'
+        }).addTo(map);
+
+        // Adding event listeners to disable map interaction when hovering over overlay containers
+        document.querySelectorAll('.overlay-container').forEach(container => {
+            container.addEventListener('mouseover', () => map.dragging.disable());
+            container.addEventListener('mouseout', () => map.dragging.enable());
+        });
+
+        var markers = [];
+
+        function getColor(price, minPrice, maxPrice) {
+            var ratio = (price - minPrice) / (maxPrice - minPrice);
+            var r = Math.floor(255 * ratio);
+            var g = Math.floor(255 * (1 - ratio));
+            return `rgb(${r},${g},0)`;
+        }
+
+        function updatePriceInfo(minPrice, maxPrice, minAddress, maxAddress) {
+            var priceInfoDiv = document.getElementById('price-info');
+            priceInfoDiv.innerHTML = `
+                <h4>Price Range</h4>
+                <p id="min-price-info">Lowest: $${minPrice.toFixed(2)} at <span style="cursor:pointer; color:blue;" onclick="moveToLocation('${minAddress}')">${minAddress}</span></p>
+                <p id="max-price-info">Highest: $${maxPrice.toFixed(2)} at <span style="cursor:pointer; color:blue;" onclick="moveToLocation('${maxAddress}')">${maxAddress}</span></p>
+            `;
+        }
+
+        function createCustomSVGIcon(svgElement, color) {
+            var svgString = new XMLSerializer().serializeToString(svgElement);
+            svgString = svgString.replace(/fill="[^"]*"/g, `fill="${color}"`);
+            var svgIcon = `data:image/svg+xml;base64,${btoa(svgString)}`;
+            return L.icon({
+                iconUrl: svgIcon,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+        }
+
+        function loadSVG(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.overrideMimeType('image/svg+xml');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    callback(xhr.responseXML.documentElement);
+                }
+            };
+            xhr.send();
+        }
+
+        async function zoomToZip() {
+            var zipCode = document.getElementById('zipcode-input').value.trim();
+            var apiKey = '63feef7833ea4353899ee66f48fa43ca';  // Replace with your actual API key
+            var apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${zipCode}&key=${apiKey}&countrycode=us&pretty=1`;
+
+            try {
+                var response = await fetch(apiUrl);
+                var data = await response.json();
+                var location = data.results[0].geometry;
+
+                if (location) {
+                    map.setView([location.lat, location.lng], 13);
+                } else {
+                    alert('Coordinates not found for the entered ZIP code.');
+                }
+            } catch (error) {
+                console.error('Error fetching location data:', error);
+                alert('Failed to fetch coordinates for the ZIP code.');
+            }
+        }
+
+        function moveToLocation(address) {
+            markers.forEach(marker => {
+                if (marker.getPopup().getContent().indexOf(address) !== -1) {
+                    map.setView(marker.getLatLng(), 13, {animate: true});
+                    setTimeout(function() {
+                        marker.openPopup();
+                    }, 100); // Ensure the map has centered and the animation has completed
+                }
+            });
+        }
+
+        d3.json('store_data.json').then(function(data) {
+    var itemSelect = document.getElementById('item-select');
+    var currentItem = itemSelect.value;
+
+    loadSVG('pepper-small.svg', function(svgElement) {
+        function updateMap() {
+            currentItem = itemSelect.value;
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            var visiblePrices = data.map(d => d.prices[currentItem + ' - Chicken']).filter(price => price !== undefined);
+            var minPrice = Math.min(...visiblePrices);
+            var maxPrice = Math.max(...visiblePrices);
+
+            data.forEach(function(store) {
+                var price = store.prices[currentItem + ' - Chicken'];
+                if (price !== undefined) { // Only proceed if the price is defined
+                    var color = getColor(price, minPrice, maxPrice);
+
+                    var marker = L.marker([store.lat, store.lng], {
+                        icon: createCustomSVGIcon(svgElement, color)
+                    }).addTo(map);
+
+                    marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split(/[-\s]/)
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(' ')} Price:<br>` +
+                        Object.entries(store.prices)
+                            .filter(([key, value]) => key.startsWith(currentItem + ' - ') && value !== undefined)
+                            .map(([key, value]) => `${key.split(' - ')[1]}: $${value.toFixed(2)}`)
+                            .join('<br>'));
+
+                    markers.push(marker);
+                } else {
+                    var marker = L.marker([store.lat, store.lng], {
+                        icon: createCustomSVGIcon(svgElement, 'gray')
+                    }).addTo(map);
+
+                    marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split('-').map(word => word.trim().charAt(0).toUpperCase() + word.trim().slice(1)).join(' ')} not available.`);
+                    markers.push(marker);
+                }
+            });
+
+            updateLegend();
+        }
+
+        function updateLegend() {
+            var bounds = map.getBounds();
+            var visibleMarkers = markers.filter(marker => bounds.contains(marker.getLatLng()));
+            var visiblePrices = visibleMarkers.map(marker => {
+                var priceMatch = marker.getPopup().getContent().match(/\$\d+\.\d{2}/);
+                return priceMatch ? {
+                    price: parseFloat(priceMatch[0].substring(1)),
+                    address: marker.getPopup().getContent().match(/<b>(.*?)<\/b>/)[1]
+                } : null;
+            }).filter(info => info !== null); // Remove null entries
+
+            if (visiblePrices.length > 0) {
+                var minPriceInfo = visiblePrices.reduce((min, p) => p.price < min.price ? p : min, visiblePrices[0]);
+                var maxPriceInfo = visiblePrices.reduce((max, p) => p.price > max.price ? p : max, visiblePrices[0]);
+
+                updatePriceInfo(minPriceInfo.price, maxPriceInfo.price, minPriceInfo.address, maxPriceInfo.address);
+            }
+        }
+
+        map.on('moveend', updateLegend);
+
+        itemSelect.addEventListener('change', updateMap);
+        updateMap();
+    });
+}).catch(function(error) {
+    console.error("Error loading data:", error);
+});
+    </script>
+</body>
+</html>
