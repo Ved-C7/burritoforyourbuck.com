@@ -1,0 +1,99 @@
+Store 3415:
+burrito - Chicken: $8.50
+burrito - Steak: $10.25
+burrito - Beef Barbacoa: $10.25
+burrito - Carnitas: $9.15
+burrito - Sofritas: $8.50
+burrito - Veggie: $8.50
+burrito-bowl - Chicken: $8.50
+burrito-bowl - Steak: $10.25
+burrito-bowl - Beef Barbacoa: $10.25
+burrito-bowl - Carnitas: $9.15
+burrito-bowl - Sofritas: $8.50
+burrito-bowl - Veggie: $8.50
+quesadilla - Chicken: $9.05
+quesadilla - Steak: $10.80
+quesadilla - Beef Barbacoa: $10.80
+quesadilla - Carnitas: $9.70
+quesadilla - Sofritas: $9.05
+quesadilla - Cheese Only: $9.05
+
+Store 2359:
+burrito - Chicken: $8.60
+burrito - Steak: $10.35
+burrito - Beef Barbacoa: $10.35
+burrito - Carnitas: $9.25
+burrito - Sofritas: $8.60
+burrito - Veggie: $8.60
+burrito-bowl - Chicken: $8.60
+burrito-bowl - Steak: $10.35
+burrito-bowl - Beef Barbacoa: $10.35
+burrito-bowl - Carnitas: $9.25
+burrito-bowl - Sofritas: $8.60
+burrito-bowl - Veggie: $8.60
+quesadilla - Chicken: $9.15
+quesadilla - Steak: $10.90
+quesadilla - Beef Barbacoa: $10.90
+quesadilla - Carnitas: $9.80
+quesadilla - Sofritas: $9.15
+quesadilla - Cheese Only: $9.15
+
+Store 4170:
+burrito - Chicken: $8.75
+burrito - Steak: $10.50
+burrito - Beef Barbacoa: $10.50
+burrito - Carnitas: $9.40
+burrito - Sofritas: $8.75
+burrito - Veggie: $8.75
+burrito-bowl - Chicken: $8.75
+burrito-bowl - Steak: $10.50
+burrito-bowl - Beef Barbacoa: $10.50
+burrito-bowl - Carnitas: $9.40
+burrito-bowl - Sofritas: $8.75
+burrito-bowl - Veggie: $8.75
+quesadilla - Chicken: $9.30
+quesadilla - Steak: $11.05
+quesadilla - Beef Barbacoa: $11.05
+quesadilla - Carnitas: $9.95
+quesadilla - Sofritas: $9.30
+quesadilla - Cheese Only: $9.30
+
+Store 3553:
+burrito - Chicken: $9.10
+burrito - Steak: $10.85
+burrito - Beef Barbacoa: $10.85
+burrito - Carnitas: $9.75
+burrito - Sofritas: $9.10
+burrito - Veggie: $9.10
+burrito-bowl - Chicken: $9.10
+burrito-bowl - Steak: $10.85
+burrito-bowl - Beef Barbacoa: $10.85
+burrito-bowl - Carnitas: $9.75
+burrito-bowl - Sofritas: $9.10
+burrito-bowl - Veggie: $9.10
+quesadilla - Chicken: $9.65
+quesadilla - Steak: $11.40
+quesadilla - Beef Barbacoa: $11.40
+quesadilla - Carnitas: $10.30
+quesadilla - Sofritas: $9.65
+quesadilla - Cheese Only: $9.65
+
+Store 4164:
+burrito - Chicken: $9.35
+burrito - Steak: $11.10
+burrito - Beef Barbacoa: $11.10
+burrito - Carnitas: $10.00
+burrito - Sofritas: $9.35
+burrito - Veggie: $9.35
+burrito-bowl - Chicken: $9.35
+burrito-bowl - Steak: $11.10
+burrito-bowl - Beef Barbacoa: $11.10
+burrito-bowl - Carnitas: $10.00
+burrito-bowl - Sofritas: $9.35
+burrito-bowl - Veggie: $9.35
+quesadilla - Chicken: $9.90
+quesadilla - Steak: $11.65
+quesadilla - Beef Barbacoa: $11.65
+quesadilla - Carnitas: $10.55
+quesadilla - Sofritas: $9.90
+quesadilla - Cheese Only: $9.90
