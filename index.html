@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Burrito For Your Buck</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌯</text></svg>">
     <style>
         html, body {
@@ -24,16 +26,15 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             pointer-events: auto;
+            cursor: default;
         }
         .header-container, .zipcode-container {
             top: 10px;
+            pointer-events: stroke;
         }
         .header-container {
             left: 10px;
             width: 250px;
-            /* display: flex;
-            flex-direction: column;
-            align-items: center; Center the items */
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -42,16 +43,22 @@
             left: 10px;
             top: 190px;
         }
-        .price-info-container {
-            top: 510px;
+        .price-gradient-container {
+            bottom: 10px;
             left: 10px;
-            width: 300px; /* Fixed width for price info container */
+            width: 300px;
+            z-index: 1000;
+        }
+        .price-info-container, .gradient-container {
+            width: 100%;
+            display: block;
+        }
+        .price-info-container {
             height: 150px;
         }
         .gradient-container {
-            top: 90%;
-            left: 10px;
-            width: 20%;
+            position: relative;
+            top: 5px; /* Adjust as necessary for visual alignment */
         }
         .header, .zipcode {
             display: flex;
@@ -59,18 +66,18 @@
             align-items: center;
         }
         #zipcode-input, button {
-            padding: 10px; /* Increased padding for input and button */
-            margin: 5px 0; /* Added margin for better spacing */
+            padding: 10px;
+            margin: 5px 0;
         }
         button {
-            cursor: pointer; /* Make the cursor indicate clickable button */
-            background-color: #4CAF50; /* A green background for the button */
-            color: white; /* White text color */
-            border: none; /* No border */
-            border-radius: 4px; /* Rounded corners for the button */
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
         }
         button:hover {
-            background-color: #45a049; /* Darker shade on hover */
+            background-color: #45a049;
         }
         #price-info {
             text-align: center;
@@ -98,11 +105,143 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #fff;
-            font-size: 16px; /* Larger font size for dropdown */
+            font-size: 16px;
         }
         select:focus {
-            border-color: #4CAF50; /* Green border on focus */
-            outline: none; /* Remove default outline */
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        /* Media Queries for Mobile Responsiveness */
+        @media (min-width: 481px) and (max-width: 932px) { /* For tablets */
+
+            html, body {
+                overflow: hidden;
+            }
+            #map {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+            select {
+                width: 70%;
+            }
+            .header-container, .zipcode-container {
+        position: relative;
+        right: 30%;
+        width: 40%;
+        text-align: center;
+        height: auto;
+        margin: 0 auto;
+    }
+            .zipcode-container {
+                top: 10px;
+                left: 50%;
+            }
+            .header img {
+                max-height: 60px;
+                width: auto;
+            }
+            #zipcode-input, button {
+                width: auto;
+                padding: 8px;
+            }
+            button {
+                font-size: 14px;
+            }
+            .gradient-container {
+                position: relative;
+                top: 0px;
+                left: 1px;
+                width: auto;
+            }
+            .header {
+                position: relative;
+                flex-direction: row;
+            }
+
+            .zipcode {
+                flex-direction: row;
+            }
+            .price-gradient-container {
+        /* position: relative;
+        margin-top: 20px;
+        top: 0; /* Position at the top of its parent */
+        /* left: -33%; */
+        width: 30%;
+        /* z-index: 1000;
+        display: block;
+        margin-left: auto;
+        margin-right: auto; */
+    }
+
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        left: -28%;
+    }
+    .zipcode-container {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        left: 45%;
+    }
+
+    .header-container > .price-gradient-container {
+        order: 1; /* Ensure the gradient container is below the header */
+    }
+}
+
+    
+
+
+    @media (max-width: 480px) { /* For mobile devices */
+            html, body {
+                overflow: hidden;
+            }
+            #map {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+            select {
+                width: 70%;
+            }
+            .header-container, .zipcode-container {
+                right: 50%;
+                width: 40%;
+                text-align: center;
+                height: 15%;
+            }
+            .zipcode-container {
+                top: 10px;
+                left: 50%;
+            }
+            .price-gradient-container {
+                left: 10px;
+                right: 10px;
+                width: auto;
+            }
+            .header img {
+                max-height: 60px;
+                width: auto;
+            }
+            #zipcode-input, button {
+                width: auto;
+                padding: 8px;
+            }
+            button {
+                font-size: 14px;
+            }
+            .gradient-container {
+                position: relative;
+                top: -20px;
+                left: 1px;
+                width: auto;
+            }
+        
         }
     </style>
 </head>
@@ -113,33 +252,36 @@
                 <img src="bfubLOGOTextWhite.jpg" alt="Burrito For Your Buck" style="height: 100px;">
                 <select id="item-select">
                     <option value="burrito">Burrito/Burrito Bowl</option>
-                    <!-- <option value="burrito-bowl">Burrito Bowl</option> -->
                     <option value="quesadilla">Quesadilla</option>
                 </select>
             </div>
         </div>
         <div class="overlay-container zipcode-container">
             <div class="zipcode">
-                <label for="zipcode-input">Enter ZIP Code:</label>
+                <label for="zipcode-input">Enter ZIP Code:</label>  
                 <input type="text" id="zipcode-input" placeholder="ZIP Code">
                 <button onclick="zoomToZip()">Zoom</button>
             </div>
         </div>
-        <div class="overlay-container price-info-container">
-            <div id="price-info"></div>
-        </div>
-        <div class="overlay-container gradient-container">
-            <div class="gradient-bar">
-                <span class="gradient-label left">Cheapest</span>
-                <span class="gradient-label right">Most Expensive</span>
+        <div class="overlay-container price-gradient-container">
+            <div class="price-info-container">
+                <div id="price-info"></div>
+            </div>
+            <div class="gradient-container">
+                <div class="gradient-bar">
+                    <span class="gradient-label left">Cheapest</span>
+                    <span class="gradient-label right">Most Expensive</span>
+                </div>
             </div>
         </div>
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="SmoothWheelZoom.js"></script>
     <script>
         var map = L.map('map', {
+            attributionControl:false,
             center: [37.8, -96],
             zoom: 4,
             zoomControl: false,
@@ -151,17 +293,38 @@
             smoothSensitivity: 6,
         });
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors, © CartoDB'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+            // attribution: '© OpenStreetMap contributors, © CartoDB',
+            noWrap: true,  // Prevents the map from wrapping horizontally.
+            bounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),  // Optionally sets bounds to prevent loading unnecessary tiles.
+            // padding: 0.5  // Loads tiles that are half the map size beyond the current viewport.
         }).addTo(map);
 
-        // Adding event listeners to disable map interaction when hovering over overlay containers
-        document.querySelectorAll('.overlay-container').forEach(container => {
-            container.addEventListener('mouseover', () => map.dragging.disable());
-            container.addEventListener('mouseout', () => map.dragging.enable());
-        });
+        var clusterIconPath = 'markercluster.png'; // Specify the path to your custom cluster icon
 
-        var markers = [];
+        var markers = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            disableClusteringAtZoom: 10,
+            spiderfyOnMaxZoom: false,
+
+            polygonOptions: {
+        fillColor: '#1b2557',
+        color: '#1b2557',
+        weight: 0.5,
+        opacity: 1,
+        fillOpacity: 0,
+        stroke: false
+        },
+
+        iconCreateFunction: function(cluster) {
+        return L.divIcon({
+            html: '<div style="background-image:url(' + clusterIconPath + ');background-size:cover;width:40px;height:40px;"><span style="line-height:40px;text-align:center;width:100%;display:block;color:#fff;font-weight:bold;">' + cluster.getChildCount() + '</span></div>',
+            className: 'mycluster',
+            iconSize: L.point(40, 40), // Smaller size
+            iconAnchor: [15, 15] // Adjusted anchor to be the center of the icon
+            });
+        }
+});
 
         function getColor(price, minPrice, maxPrice) {
             var ratio = (price - minPrice) / (maxPrice - minPrice);
@@ -179,27 +342,14 @@
             `;
         }
 
-        function createCustomSVGIcon(svgElement, color) {
-            var svgString = new XMLSerializer().serializeToString(svgElement);
-            svgString = svgString.replace(/fill="[^"]*"/g, `fill="${color}"`);
-            var svgIcon = `data:image/svg+xml;base64,${btoa(svgString)}`;
-            return L.icon({
-                iconUrl: svgIcon,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
-            });
-        }
+        var iconUrls = [
+            'icons/icon1.png', 'icons/icon2.png', 'icons/icon3.png', 'icons/icon4.png', 'icons/icon5.png',
+            'icons/icon6.png', 'icons/icon7.png', 'icons/icon8.png', 'icons/icon9.png', 'icons/icon10.png'
+        ];
 
-        function loadSVG(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.overrideMimeType('image/svg+xml');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    callback(xhr.responseXML.documentElement);
-                }
-            };
-            xhr.send();
+        function getIconUrl(price, minPrice, maxPrice) {
+            var index = Math.floor((price - minPrice) / (maxPrice - minPrice) * 9); // Calculate index 0-9 based on price
+            return iconUrls[index];
         }
 
         async function zoomToZip() {
@@ -213,7 +363,7 @@
                 var location = data.results[0].geometry;
 
                 if (location) {
-                    map.setView([location.lat, location.lng], 13);
+                    map.setView([location.lat, location.lng], 12);
                 } else {
                     alert('Coordinates not found for the entered ZIP code.');
                 }
@@ -224,7 +374,7 @@
         }
 
         function moveToLocation(address) {
-            markers.forEach(marker => {
+            markers.eachLayer(marker => {
                 if (marker.getPopup().getContent().indexOf(address) !== -1) {
                     map.setView(marker.getLatLng(), 13, {animate: true});
                     setTimeout(function() {
@@ -235,77 +385,82 @@
         }
 
         d3.json('store_data.json').then(function(data) {
-    var itemSelect = document.getElementById('item-select');
-    var currentItem = itemSelect.value;
+            var itemSelect = document.getElementById('item-select');
+            var currentItem = itemSelect.value;
 
-    loadSVG('pepper-small.svg', function(svgElement) {
-        function updateMap() {
-            currentItem = itemSelect.value;
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
+            function updateMap() {
+                currentItem = itemSelect.value;
+                markers.clearLayers();
 
-            var visiblePrices = data.map(d => d.prices[currentItem + ' - Chicken']).filter(price => price !== undefined);
-            var minPrice = Math.min(...visiblePrices);
-            var maxPrice = Math.max(...visiblePrices);
+                var visiblePrices = data.map(d => d.prices[currentItem + ' - Chicken']).filter(price => price !== undefined);
+                var minPrice = Math.min(...visiblePrices);
+                var maxPrice = Math.max(...visiblePrices);
 
-            data.forEach(function(store) {
-                var price = store.prices[currentItem + ' - Chicken'];
-                if (price !== undefined) { // Only proceed if the price is defined
-                    var color = getColor(price, minPrice, maxPrice);
+                data.forEach(function(store) {
+                    var price = store.prices[currentItem + ' - Chicken'];
+                    if (price !== undefined) { // Only proceed if the price is defined
+                        var iconUrl = getIconUrl(price, minPrice, maxPrice);
+                        var marker = L.marker([store.lat, store.lng], {
+                            icon: L.icon({
+                                iconUrl: iconUrl,
+                                iconSize: [35, 35], // Specify icon size if needed
+                                iconAnchor: [16, 16] // Specify icon anchor if needed
+                            })
+                        });
 
-                    var marker = L.marker([store.lat, store.lng], {
-                        icon: createCustomSVGIcon(svgElement, color)
-                    }).addTo(map);
+                        marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split(/[-\s]/)
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ')} Price:<br>` +
+                            Object.entries(store.prices)
+                                .filter(([key, value]) => key.startsWith(currentItem + ' - ') && value !== undefined)
+                                .map(([key, value]) => `${key.split(' - ')[1]}: $${value.toFixed(2)}`)
+                                .join('<br>'));
 
-                    marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split(/[-\s]/)
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                        .join(' ')} Price:<br>` +
-                        Object.entries(store.prices)
-                            .filter(([key, value]) => key.startsWith(currentItem + ' - ') && value !== undefined)
-                            .map(([key, value]) => `${key.split(' - ')[1]}: $${value.toFixed(2)}`)
-                            .join('<br>'));
+                        markers.addLayer(marker);
+                    } else {
+                        var marker = L.marker([store.lat, store.lng], {
+                            icon: L.icon({
+                                iconUrl: 'icons/default.png', // Use a default icon if no specific price range
+                                iconSize: [32, 32],
+                                iconAnchor: [16, 16]
+                            })
+                        });
 
-                    markers.push(marker);
-                } else {
-                    var marker = L.marker([store.lat, store.lng], {
-                        icon: createCustomSVGIcon(svgElement, 'gray')
-                    }).addTo(map);
+                        marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split('-').map(word => word.trim().charAt(0).toUpperCase() + word.trim().slice(1)).join(' ')} not available.`);
+                        markers.addLayer(marker);
+                    }
+                });
 
-                    marker.bindPopup(`<b>${store.address}</b><br>${currentItem.split('-').map(word => word.trim().charAt(0).toUpperCase() + word.trim().slice(1)).join(' ')} not available.`);
-                    markers.push(marker);
-                }
-            });
-
-            updateLegend();
-        }
-
-        function updateLegend() {
-            var bounds = map.getBounds();
-            var visibleMarkers = markers.filter(marker => bounds.contains(marker.getLatLng()));
-            var visiblePrices = visibleMarkers.map(marker => {
-                var priceMatch = marker.getPopup().getContent().match(/\$\d+\.\d{2}/);
-                return priceMatch ? {
-                    price: parseFloat(priceMatch[0].substring(1)),
-                    address: marker.getPopup().getContent().match(/<b>(.*?)<\/b>/)[1]
-                } : null;
-            }).filter(info => info !== null); // Remove null entries
-
-            if (visiblePrices.length > 0) {
-                var minPriceInfo = visiblePrices.reduce((min, p) => p.price < min.price ? p : min, visiblePrices[0]);
-                var maxPriceInfo = visiblePrices.reduce((max, p) => p.price > max.price ? p : max, visiblePrices[0]);
-
-                updatePriceInfo(minPriceInfo.price, maxPriceInfo.price, minPriceInfo.address, maxPriceInfo.address);
+                map.addLayer(markers);
+                updateLegend();
             }
-        }
 
-        map.on('moveend', updateLegend);
+            function updateLegend() {
+                var bounds = map.getBounds();
+                var visibleMarkers = markers.getLayers().filter(marker => bounds.contains(marker.getLatLng()));
+                var visiblePrices = visibleMarkers.map(marker => {
+                    var priceMatch = marker.getPopup().getContent().match(/\$\d+\.\d{2}/);
+                    return priceMatch ? {
+                        price: parseFloat(priceMatch[0].substring(1)),
+                        address: marker.getPopup().getContent().match(/<b>(.*?)<\/b>/)[1]
+                    } : null;
+                }).filter(info => info !== null); // Remove null entries
 
-        itemSelect.addEventListener('change', updateMap);
-        updateMap();
-    });
-}).catch(function(error) {
-    console.error("Error loading data:", error);
-});
+                if (visiblePrices.length > 0) {
+                    var minPriceInfo = visiblePrices.reduce((min, p) => p.price < min.price ? p : min, visiblePrices[0]);
+                    var maxPriceInfo = visiblePrices.reduce((max, p) => p.price > max.price ? p : max, visiblePrices[0]);
+
+                    updatePriceInfo(minPriceInfo.price, maxPriceInfo.price, minPriceInfo.address, maxPriceInfo.address);
+                }
+            }
+
+            map.on('moveend', updateLegend);
+
+            itemSelect.addEventListener('change', updateMap);
+            updateMap();
+        }).catch(function(error) {
+            console.error("Error loading data:", error);
+        });
     </script>
 </body>
 </html>
